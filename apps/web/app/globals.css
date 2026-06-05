@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Kabe — Global Styles
+   Original editorial design system
+   ============================================ */
+
+@layer base {
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #f1f3f5;
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #868e96;
+    --border-color: #e9ecef;
+    --accent: #4c6ef5;
+    --accent-hover: #4263eb;
+    --accent-subtle: #f0f4ff;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --card-shadow-hover: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+  }
+
+  .dark {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --border-color: #30363d;
+    --accent: #748ffc;
+    --accent-hover: #91a7ff;
+    --accent-subtle: #1a1f36;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 10px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  * {
+    @apply border-[var(--border-color)];
+  }
+
+  body {
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+
+  .dark ::selection {
+    @apply bg-brand-800 text-brand-100;
+  }
+}
+
+@layer components {
+  /* Card base */
+  .card {
+    @apply bg-[var(--bg-primary)] rounded-[var(--radius)] border border-[var(--border-color)];
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Article card */
+  .article-card {
+    @apply card p-6 cursor-pointer;
+  }
+
+  /* Category chip */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
+           bg-[var(--accent-subtle)] text-[var(--accent)]
+           transition-colors duration-200;
+  }
+
+  .chip:hover {
+    @apply bg-brand-100 text-[var(--accent-hover)];
+  }
+
+  .dark .chip:hover {
+    @apply bg-brand-900/30;
+  }
+
+  /* Button base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius)]
+           font-medium transition-all duration-200
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]
+           px-5 py-2.5 text-sm;
+    box-shadow: 0 1px 2px rgba(76, 110, 245, 0.3);
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-[var(--text-secondary)]
+           hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]
+           px-4 py-2 text-sm;
+  }
+
+  .btn-outline {
+    @apply btn border border-[var(--border-color)] text-[var(--text-primary)]
+           hover:bg-[var(--bg-secondary)]
+           px-4 py-2 text-sm;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full rounded-[var(--radius)] border border-[var(--border-color)]
+           bg-[var(--bg-primary)] px-4 py-2.5 text-sm
+           text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+           focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]
+           transition-all duration-200;
+  }
+
+  /* Section spacing */
+  .section {
+    @apply py-16 md:py-24;
+  }
+
+  .section-sm {
+    @apply py-10 md:py-16;
+  }
+
+  /* Container */
+  .container-page {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-content {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-brand-400;
+    -webkit-background-clip: text;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-[var(--border-color)];
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply animate-pulse bg-[var(--bg-tertiary)] rounded-[var(--radius)];
+  }
+}

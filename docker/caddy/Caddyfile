@@ -1,0 +1,16 @@
+# Caddy reverse proxy config
+# Single entry point for all services
+#
+# Production: ganti `:80` dengan `kabe.lrznd.my.id` dan Caddy auto-HTTPS
+
+:80 {
+    # Directus CMS — admin panel + API
+    handle_path /cms/* {
+        reverse_proxy directus:8055
+    }
+
+    # Next.js frontend — everything else
+    handle {
+        reverse_proxy web:3000
+    }
+}
