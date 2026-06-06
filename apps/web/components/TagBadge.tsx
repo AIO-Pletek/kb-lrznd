@@ -8,20 +8,20 @@ interface TagBadgeProps {
 }
 
 export function TagBadge({ name, slug, active }: TagBadgeProps) {
-  const Component = active ? "span" : Link;
-  const props = active ? {} : { href: `/articles?tag=${slug}` };
+  const className = cn(
+    "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+    active
+      ? "bg-[var(--accent)] text-white"
+      : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--accent-subtle)] hover:text-[var(--accent)]"
+  );
+
+  if (active) {
+    return <span className={className}>{name}</span>;
+  }
 
   return (
-    <Component
-      {...(props as Record<string, string>)}
-      className={cn(
-        "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
-        active
-          ? "bg-[var(--accent)] text-white"
-          : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--accent-subtle)] hover:text-[var(--accent)]"
-      )}
-    >
+    <Link href={`/articles?tag=${slug}`} className={className}>
       {name}
-    </Component>
+    </Link>
   );
 }
