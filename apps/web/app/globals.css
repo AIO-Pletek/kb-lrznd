@@ -124,7 +124,7 @@
     @apply w-full rounded-[var(--radius)] border border-[var(--border-color)]
            bg-[var(--bg-primary)] px-4 py-2.5 text-sm
            text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
-           focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]
+           focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]
            transition-all duration-200;
   }
 
