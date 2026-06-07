@@ -36,7 +36,7 @@ services:
       PUBLIC_URL: ${DIRECTUS_PUBLIC_URL}
       CORS_ENABLED: "true"
       CORS_ORIGIN: "*"
-      CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "self"
+      CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "'self'"
     volumes:
       - directus_uploads:/directus/uploads
     networks:
