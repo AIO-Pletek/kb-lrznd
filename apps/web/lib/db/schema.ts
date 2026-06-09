@@ -9,7 +9,7 @@ import {
   pgEnum,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ============================================
 // Enums
@@ -93,6 +93,45 @@ export const articlesTags = pgTable(
   },
   (t) => [primaryKey({ columns: [t.articleId, t.tagId] })]
 );
+
+// ============================================
+// Relations (for Drizzle query API `with:`)
+// ============================================
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  articles: many(articles),
+}));
+
+export const authorsRelations = relations(authors, ({ many }) => ({
+  articles: many(articles),
+}));
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  articlesTags: many(articlesTags),
+}));
+
+export const articlesRelations = relations(articles, ({ one, many }) => ({
+  category: one(categories, {
+    fields: [articles.categoryId],
+    references: [categories.id],
+  }),
+  author: one(authors, {
+    fields: [articles.authorId],
+    references: [authors.id],
+  }),
+  tags: many(articlesTags),
+}));
+
+export const articlesTagsRelations = relations(articlesTags, ({ one }) => ({
+  article: one(articles, {
+    fields: [articlesTags.articleId],
+    references: [articles.id],
+  }),
+  tag: one(tags, {
+    fields: [articlesTags.tagId],
+    references: [tags.id],
+  }),
+}));
 
 // ============================================
 // Type exports
