@@ -34,8 +34,8 @@ Semua command dijalankan dari root project (`D:\myproject\kb-lrznd`) kecuali dis
 # Frontend Next.js dev server (port 3000)
 cd apps/web && npm run dev
 
-# Jalankan backend services aja (Directus + PostgreSQL) via Docker
-docker compose up -d postgres directus
+# Jalankan backend service aja (PostgreSQL) via Docker
+docker compose up -d postgres
 
 # Jalankan semua service via Docker
 docker compose up -d
@@ -72,25 +72,25 @@ docker compose logs -f web     # logs spesifik service
 | Service | URL Local | URL Production |
 |---------|-----------|----------------|
 | Web KB | http://localhost | https://kabe.lrznd.my.id |
-| CMS Directus | http://localhost/cms/admin | https://kabe.lrznd.my.id/cms/admin |
-| Meilisearch | http://localhost:7700 (internal) | (internal only) |
+| Admin Panel | http://localhost/admin | https://kabe.lrznd.my.id/admin |
 
 ## Architecture
 
 ### Stack
 
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS 3
-- **CMS:** Directus (headless, connect ke PostgreSQL)
+- **CMS:** Custom admin panel (built-in, `/admin`), Drizzle ORM
+- **Auth:** iron-session (sealed cookie, single admin user)
 - **Database:** PostgreSQL 16
-- **Search:** Directus API search + Meilisearch (opsional, belum full sync)
+- **Search:** PostgreSQL ILIKE via Drizzle queries
 - **Reverse Proxy:** Nginx (eksternal, di luar Docker)
-- **Deployment:** Docker Compose
+- **Deployment:** Docker Compose (2 services: postgres + web)
 
 ### Struktur Project
 
 ```
 kb-lrznd/
-├── apps/web/             # Next.js frontend (monorepo-style)
+├── apps/web/             # Next.js frontend + admin panel
 │   ├── app/              # App Router pages
 │   │   ├── layout.tsx    # Root layout (Header, Footer, ThemeProvider)
 │   │   ├── page.tsx      # Home page
@@ -98,36 +98,48 @@ kb-lrznd/
 │   │   ├── categories/   # /categories, /categories/[slug]
 │   │   ├── search/       # /search
 │   │   ├── about/        # /about
+│   │   ├── admin/        # /admin (CMS built-in)
+│   │   │   ├── login/    # Admin login page
+│   │   │   ├── articles/ # Article list, new, edit
+│   │   │   ├── categories/ # Category CRUD
+│   │   │   ├── tags/     # Tag CRUD
+│   │   │   └── authors/  # Author CRUD
+│   │   ├── api/admin/    # Admin API routes (CRUD + upload)
 │   │   └── globals.css   # Global styles + Tailwind directives
-│   ├── components/       # Reusable UI components (14 components)
+│   ├── components/       # Reusable UI components
 │   ├── lib/
-│   │   ├── directus.ts   # Directus SDK client init (server-side)
-│   │   ├── api.ts        # Semua data-fetching functions
+│   │   ├── db/           # Drizzle ORM (schema, client, migrations)
+│   │   ├── auth.ts       # iron-session helpers
+│   │   ├── api.ts        # Public data-fetching (Drizzle queries)
 │   │   ├── types.ts      # TypeScript interfaces
-│   │   └── utils.ts      # Utility: reading time, dates, cn(), slugify, asset URL
-│   ├── Dockerfile        # Multi-stage build → standalone output
+│   │   └── utils.ts      # Utilities: reading time, dates, cn(), slugify, asset URL
+│   ├── middleware.ts      # Admin route protection
+│   ├── drizzle.config.ts # Drizzle-kit config
+│   ├── Dockerfile        # Multi-stage build + migration runner
 │   └── package.json
 ├── docker/nginx/         # Nginx reverse proxy config
-├── docs/                 # CMS_SETUP.md, DEPLOYMENT.md, CONTENT_GUIDE.md
-├── docker-compose.yml    # 4 services: postgres, directus, meilisearch, web
+├── docs/                 # Dokumentasi
+├── docker-compose.yml    # 2 services: postgres, web
 ├── .env.example          # Template environment variables
 └── README.md
 ```
 
 ### Data Flow
 
-1. **CMS → Frontend:** Next.js server-side (RSC) fetch data dari Directus API via `@directus/sdk` pakai internal Docker network (`http://directus:8055`)
-2. **Routing:** Nginx reverse proxy (eksternal) — `/cms/*` ke Directus `127.0.0.1:8055`, sisanya ke Next.js `127.0.0.1:3000`
-3. **Static Generation:** `next.config.ts` pakai `output: "standalone"` untuk Docker. ISR/SSG slugs di-generate dari `getAllArticleSlugs()` dan `getAllCategorySlugs()` di `lib/api.ts`
-4. **Images:** Directus assets di-proxy melalui Nginx (`/cms/assets/...`). Next.js `next.config.ts` allowlisted `directus:8055` dan domain production
+1. **Database → Frontend:** Next.js server-side (RSC) fetch data dari PostgreSQL via Drizzle ORM
+2. **Routing:** Nginx reverse proxy (eksternal) — semua request ke Next.js `127.0.0.1:3000`
+3. **Admin Panel:** `/admin/*` routes built-in ke Next.js app, dilindungi iron-session auth
+4. **Static Generation:** `next.config.ts` pakai `output: "standalone"` untuk Docker. ISR/SSG slugs dari `getAllArticleSlugs()` dan `getAllCategorySlugs()` di `lib/api.ts`
+5. **Images:** Uploaded files disimpan di `public/uploads/` (Docker volume), served langsung oleh Next.js
 
 ### Key Patterns
 
 **Data Fetching (`lib/api.ts`):**
-- Semua query ke Directus pakai `directus.request(readItems(...))` pattern (SDK v17)
+- Semua query ke PostgreSQL via Drizzle ORM (`db.query.articles.findMany(...)`)
 - Semua function return empty array/null on error (fail-safe, no crash)
 - `fetchArticles()` support filtering: category, tag, search, sort, featured, pagination
-- Pagination meta di-estimasi (SDK v17 ga return total count by default)
+- Pagination meta di-estimasi (Drizzle query belum support total count)
+- Data mapper transform Drizzle camelCase → Directus-style snake_case (kompatibilitas types)
 
 **Styling:**
 - Tailwind CSS dengan custom design tokens: `brand` (indigo-blue), `ink` (gray scale)
@@ -156,13 +168,23 @@ Semua konfigurasi lewat environment variables (lihat `.env.example`). Key vars:
 | Variable | Service |
 |----------|---------|
 | `DB_USER`, `DB_PASSWORD`, `DB_NAME` | PostgreSQL |
-| `DIRECTUS_KEY`, `DIRECTUS_SECRET` | Directus |
-| `DIRECTUS_ADMIN_EMAIL`, `DIRECTUS_ADMIN_PASSWORD` | Directus initial admin |
-| `DIRECTUS_PUBLIC_URL` | Public URL Directus via proxy |
-| `MEILI_MASTER_KEY` | Meilisearch auth |
+| `DATABASE_URL` | Full PostgreSQL connection string |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Admin login credentials |
+| `SESSION_SECRET` | iron-session encryption key (min 32 chars) |
 | `SITE_URL` | Public site URL (production: `https://kabe.lrznd.my.id`) |
-| `DIRECTUS_URL` | Internal Directus URL (auto-set di docker-compose) |
+
+### Database
+
+Pakai Drizzle ORM dengan PostgreSQL. Schema didefinisikan di `lib/db/schema.ts`. Migration SQL manual di `lib/db/migrations/`. Migration dijalankan otomatis saat container start via `lib/db/run-migrate.mjs`.
+
+Commands Drizzle:
+```bash
+cd apps/web
+npm run db:generate   # Generate migration dari schema
+npm run db:migrate    # Jalankan migrasi
+npm run db:studio     # Drizzle Studio GUI
+```
 
 ### Search Implementation
 
-Saat ini search pakai Directus API filter `_icontains` (case-insensitive partial match). Meilisearch sudah ada di stack tapi belum full sync. Kalau butuh implementasi Meilisearch sync, hook ke Directus webhook atau cron job — jangan overwrite search yang sudah jalan.
+Search pakai PostgreSQL `ILIKE` via Drizzle `ilike()` operator. Case-insensitive partial match di field title, summary, content.

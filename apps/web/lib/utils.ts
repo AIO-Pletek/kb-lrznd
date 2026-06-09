@@ -44,16 +44,16 @@ export function formatRelativeDate(
 }
 
 // ============================================
-// Directus asset URL
+// Asset URL (local uploads)
 // ============================================
 
 export function getAssetUrl(
-  imageId: string | null | undefined,
-  directusUrl?: string
+  path: string | null | undefined
 ): string | null {
-  if (!imageId) return null;
-  const base = directusUrl || process.env.NEXT_PUBLIC_DIRECTUS_URL || "/cms";
-  return `${base}/assets/${imageId}`;
+  if (!path) return null;
+  // If it's already a full URL or starts with /uploads/, return as-is
+  if (path.startsWith("http") || path.startsWith("/")) return path;
+  return `/uploads/${path}`;
 }
 
 // ============================================

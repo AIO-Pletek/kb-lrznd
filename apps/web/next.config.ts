@@ -5,20 +5,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "directus",
-        port: "8055",
-        pathname: "/assets/**",
-      },
-      {
-        protocol: "http",
-        hostname: "localhost",
-        pathname: "/cms/assets/**",
-      },
-      {
         protocol: "https",
         hostname: "kabe.lrznd.my.id",
-        pathname: "/cms/assets/**",
+        pathname: "/uploads/**",
       },
     ],
   },

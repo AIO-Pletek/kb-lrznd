@@ -71,14 +71,12 @@ export function Footer() {
             </h4>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="/cms/admin"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/admin"
                   className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
                 >
-                  CMS Panel →
-                </a>
+                  Admin Panel →
+                </Link>
               </li>
             </ul>
           </div>
