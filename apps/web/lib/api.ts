@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { articles, categories, tags, authors } from "@/lib/db/schema";
-import { eq, ne, and, or, ilike, desc, asc, SQL } from "drizzle-orm";
+import { eq, ne, and, or, ilike, desc, asc } from "drizzle-orm";
 import type {
   Article,
   ArticleListItem,
@@ -105,7 +105,7 @@ export async function fetchArticles(
   const { page = 1, limit = 12, category, tag, search, sort = "latest", featured } = params;
 
   try {
-    const conditions: SQL[] = [eq(articles.status, "published")];
+    const conditions = [eq(articles.status, "published")];
 
     if (featured !== undefined) {
       conditions.push(eq(articles.isFeatured, featured));
@@ -123,11 +123,11 @@ export async function fetchArticles(
 
     const where = conditions.length > 1 ? and(...conditions) : conditions[0];
 
-    const sortMap: Record<SortOption, ReturnType<typeof desc<any>>> = {
+    const sortMap = {
       latest: desc(articles.publishedAt),
       updated: desc(articles.updatedAt),
       title: asc(articles.title),
-    };
+    } as const;
 
     const offset = (page - 1) * limit;
 
