@@ -14,7 +14,7 @@ export default async function AdminDashboardPage() {
   const [publishedCount] = await db
     .select({ count: count() })
     .from(articles)
-    .where(articles.status.eq("published")); // drizzle eq — no runtime import needed here since schema re-exports helpers
+    .where(eq(articles.status, "published"));
 
   const recentArticles = await db.query.articles.findMany({
     orderBy: [desc(articles.updatedAt)],
