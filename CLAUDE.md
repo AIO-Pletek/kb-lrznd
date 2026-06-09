@@ -83,7 +83,7 @@ docker compose logs -f web     # logs spesifik service
 - **CMS:** Directus (headless, connect ke PostgreSQL)
 - **Database:** PostgreSQL 16
 - **Search:** Directus API search + Meilisearch (opsional, belum full sync)
-- **Reverse Proxy:** Caddy
+- **Reverse Proxy:** Nginx (eksternal, di luar Docker)
 - **Deployment:** Docker Compose
 
 ### Struktur Project
@@ -107,9 +107,9 @@ kb-lrznd/
 │   │   └── utils.ts      # Utility: reading time, dates, cn(), slugify, asset URL
 │   ├── Dockerfile        # Multi-stage build → standalone output
 │   └── package.json
-├── docker/caddy/         # Caddy reverse proxy config
+├── docker/nginx/         # Nginx reverse proxy config
 ├── docs/                 # CMS_SETUP.md, DEPLOYMENT.md, CONTENT_GUIDE.md
-├── docker-compose.yml    # 5 services: postgres, directus, meilisearch, web, caddy
+├── docker-compose.yml    # 4 services: postgres, directus, meilisearch, web
 ├── .env.example          # Template environment variables
 └── README.md
 ```
@@ -117,9 +117,9 @@ kb-lrznd/
 ### Data Flow
 
 1. **CMS → Frontend:** Next.js server-side (RSC) fetch data dari Directus API via `@directus/sdk` pakai internal Docker network (`http://directus:8055`)
-2. **Routing:** Caddy reverse proxy — `/cms/*` ke Directus, sisanya ke Next.js `web:3000`
+2. **Routing:** Nginx reverse proxy (eksternal) — `/cms/*` ke Directus `127.0.0.1:8055`, sisanya ke Next.js `127.0.0.1:3000`
 3. **Static Generation:** `next.config.ts` pakai `output: "standalone"` untuk Docker. ISR/SSG slugs di-generate dari `getAllArticleSlugs()` dan `getAllCategorySlugs()` di `lib/api.ts`
-4. **Images:** Directus assets di-proxy melalui Caddy (`/cms/assets/...`). Next.js `next.config.ts` allowlisted `directus:8055` dan domain production
+4. **Images:** Directus assets di-proxy melalui Nginx (`/cms/assets/...`). Next.js `next.config.ts` allowlisted `directus:8055` dan domain production
 
 ### Key Patterns
 
