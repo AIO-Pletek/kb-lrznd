@@ -36,18 +36,28 @@ async function main() {
     const sql = readFileSync(filePath, "utf-8");
 
     console.log(`  → ${file}`);
-    try {
-      await pool.query(sql);
-      console.log(`    OK`);
-    } catch (err) {
-      // If table already exists, that's fine — continue
-      if (err.code === "42P07" || err.code === "42710") {
-        console.log(`    Already exists, skipping.`);
-      } else {
-        console.error(`    Failed: ${err.message}`);
-        // Don't crash — continue with remaining migrations
+
+    // Split by semicolons, execute each statement separately
+    // Skip empty lines and comments
+    const statements = sql
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.startsWith("--"));
+
+    for (const stmt of statements) {
+      try {
+        await pool.query(stmt);
+      } catch (err) {
+        // If relation/type already exists, skip silently
+        if (err.code === "42P07" || err.code === "42710") {
+          continue;
+        }
+        console.error(`    ⚠ ${err.message.split("\n")[0]}`);
+        // Continue with next statement
       }
     }
+
+    console.log(`    Done.`);
   }
 
   console.log("Migrations done.");
