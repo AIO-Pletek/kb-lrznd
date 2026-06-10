@@ -32,15 +32,8 @@ COPY --from=builder --chown=nextjs:kb /app/package.json ./package.json
 RUN mkdir -p /app/public/uploads && chown -R nextjs:kb /app
 
 # Startup script
-RUN cat > /app/start.sh << 'EOF' && chmod +x /app/start.sh && chown nextjs:kb /app/start.sh
-#!/bin/sh
-set -e
-cd /app
-echo "=== Running DB migration ==="
-node lib/db/run-migrate.mjs
-echo "=== Starting Next.js ==="
-exec node server.js
-EOF
+COPY --chown=nextjs:kb start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 USER nextjs
 EXPOSE 3000
