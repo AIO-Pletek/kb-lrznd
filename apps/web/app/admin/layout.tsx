@@ -9,7 +9,9 @@ import {
   Tags,
   Users,
   LogOut,
+  Image,
 } from "lucide-react";
+
 
 export default async function AdminLayout({
   children,
@@ -30,6 +32,7 @@ export default async function AdminLayout({
     { href: "/admin/categories", label: "Kategori", icon: FolderOpen },
     { href: "/admin/tags", label: "Tag", icon: Tags },
     { href: "/admin/authors", label: "Author", icon: Users },
+    { href: "/admin/files", label: "File Manager", icon: Image },
   ];
 
   return (

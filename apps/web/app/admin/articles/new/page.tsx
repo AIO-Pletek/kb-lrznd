@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/utils";
+import { FileUpload, FilePreview } from "@/components/admin/FileUpload";
 
 interface Category {
   id: string;
@@ -37,6 +38,7 @@ export default function NewArticlePage() {
     categoryId: "",
     authorId: "",
     selectedTags: [] as string[],
+    featuredImage: "",
     isFeatured: false,
     status: "draft" as "draft" | "published",
   });
@@ -196,6 +198,27 @@ export default function NewArticlePage() {
             placeholder="Tulis konten dalam format Markdown..."
             rows={20}
           />
+        </div>
+
+        {/* Featured Image Upload */}
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+            Featured Image
+          </label>
+          {form.featuredImage ? (
+            <FilePreview
+              files={[{ name: "Featured", url: form.featuredImage, type: "image/*", size: 0, category: "images" }]}
+              onRemove={() => setForm((p) => ({ ...p, featuredImage: "" }))}
+              compact
+            />
+          ) : (
+            <FileUpload
+              onUpload={(files) => setForm((p) => ({ ...p, featuredImage: files[0]?.url || "" }))}
+              accept="image/*"
+              multiple={false}
+              label="Upload Featured Image"
+            />
+          )}
         </div>
 
         {/* Category + Author */}

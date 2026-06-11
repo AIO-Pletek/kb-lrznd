@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { slugify } from "@/lib/utils";
+import { FileUpload, FilePreview } from "@/components/admin/FileUpload";
 
 interface Category {
   id: string;
@@ -323,15 +324,22 @@ export default function EditArticlePage() {
 
         <div>
           <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-            Featured Image URL
+            Featured Image
           </label>
-          <input
-            type="text"
-            value={form.featuredImage}
-            onChange={(e) => setForm((p) => ({ ...p, featuredImage: e.target.value }))}
-            className="input text-sm"
-            placeholder="/uploads/nama-file.jpg"
-          />
+          {form.featuredImage ? (
+            <FilePreview
+              files={[{ name: "Featured", url: form.featuredImage, type: "image/*", size: 0, category: "images" }]}
+              onRemove={() => setForm((p) => ({ ...p, featuredImage: "" }))}
+              compact
+            />
+          ) : (
+            <FileUpload
+              onUpload={(files) => setForm((p) => ({ ...p, featuredImage: files[0]?.url || "" }))}
+              accept="image/*"
+              multiple={false}
+              label="Upload Featured Image"
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-3">
