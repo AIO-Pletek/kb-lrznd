@@ -38,7 +38,8 @@ export default function NewArticlePage() {
     categoryId: "",
     authorId: "",
     selectedTags: [] as string[],
-    featuredImage: "",
+    featuredImage: "" as string,
+    featuredImageMeta: null as { name: string; url: string; type: string; size: number; category: string } | null,
     isFeatured: false,
     status: "draft" as "draft" | "published",
   });
@@ -207,13 +208,17 @@ export default function NewArticlePage() {
           </label>
           {form.featuredImage ? (
             <FilePreview
-              files={[{ name: "Featured", url: form.featuredImage, type: "image/*", size: 0, category: "images" }]}
-              onRemove={() => setForm((p) => ({ ...p, featuredImage: "" }))}
+              files={form.featuredImageMeta ? [form.featuredImageMeta] : [{ name: "Featured", url: form.featuredImage, type: "image/*", size: 0, category: "images" }]}
+              onRemove={() => setForm((p) => ({ ...p, featuredImage: "", featuredImageMeta: null }))}
               compact
             />
           ) : (
             <FileUpload
-              onUpload={(files) => setForm((p) => ({ ...p, featuredImage: files[0]?.url || "" }))}
+              onUpload={(files) => {
+                if (files[0]) {
+                  setForm((p) => ({ ...p, featuredImage: files[0].url, featuredImageMeta: files[0] }));
+                }
+              }}
               accept="image/*"
               multiple={false}
               label="Upload Featured Image"
