@@ -87,6 +87,7 @@ export default function EditArticlePage() {
           isFeatured: article.isFeatured,
           status: article.status,
           featuredImage: article.featuredImage || "",
+          featuredImageMeta: null,
         });
       } catch {
         setError("Gagal memuat artikel");
