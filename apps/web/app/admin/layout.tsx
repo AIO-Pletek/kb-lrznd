@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -16,8 +17,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
+  const pathname = (await headers()).get("x-pathname") || "";
 
-  if (!session.isLoggedIn) {
+  // Jangan redirect kalo lagi di halaman login (hindari infinite loop)
+  if (!session.isLoggedIn && pathname !== "/admin/login") {
     redirect("/admin/login");
   }
 
